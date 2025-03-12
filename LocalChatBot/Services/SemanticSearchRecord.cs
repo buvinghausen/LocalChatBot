@@ -16,6 +16,9 @@ public class SemanticSearchRecord
     [VectorStoreRecordData]
     public required string Text { get; set; }
 
-    [VectorStoreRecordVector(384, DistanceFunction.CosineSimilarity)] // 384 is the default vector size for the all-minilm embedding model
+    // Default Vector Sizes
+    // nomic-embed-text: 768
+    // all-minilm: 384
+    [VectorStoreRecordVector(384, DistanceFunction.CosineSimilarity)]
     public ReadOnlyMemory<float> Vector { get; set; }
 }

@@ -10,10 +10,10 @@ This project is configured to use Ollama, an application that allows you to run 
 First, download and install [Ollama from their official website](https://www.ollama.com). Follow the installation instructions specific to your operating system.
 
 ### 2. Choose and Install Models
-This project uses the `llama3.2` and `all-minilm` language models. To install these models, use the following commands in your terminal once Ollama has been installed:
+This project uses the `gemma3` language model and `all-minilm` encodings model. To install these models, use the following commands in your terminal once Ollama has been installed:
 
 ```sh
-ollama pull llama3.2
+ollama pull gemma3
 ollama pull all-minilm
 ```
 

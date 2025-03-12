@@ -10,9 +10,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"),
-    "llama3.2");
-IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = new OllamaApiClient(new Uri("http://localhost:11434"),
+    "gemma3");
+var ollama = new OllamaApiClient(new Uri("http://localhost:11434"),
     "all-minilm");
+
+IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = ollama;
 
 var vectorStore = new JsonVectorStore(Path.Combine(AppContext.BaseDirectory, "vector-store"));
 
