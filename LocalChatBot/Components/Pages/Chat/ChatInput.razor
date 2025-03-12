@@ -21,8 +21,8 @@
     [Parameter]
     public EventCallback<ChatMessage> OnSend { get; set; }
 
-    public ValueTask FocusAsync()
-        => _textArea.FocusAsync();
+    public ValueTask FocusAsync() =>
+        _textArea.FocusAsync();
 
     private async Task SendMessageAsync()
     {

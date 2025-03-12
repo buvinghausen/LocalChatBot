@@ -17,11 +17,11 @@ namespace LocalChatBot.Services;
 /// </summary>
 public class JsonVectorStore(string basePath) : IVectorStore
 {
-    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null) where TKey : notnull
-        => new JsonVectorStoreRecordCollection<TKey, TRecord>(name, Path.Combine(basePath, name + ".json"), vectorStoreRecordDefinition);
+    public IVectorStoreRecordCollection<TKey, TRecord> GetCollection<TKey, TRecord>(string name, VectorStoreRecordDefinition? vectorStoreRecordDefinition = null) where TKey : notnull =>
+        new JsonVectorStoreRecordCollection<TKey, TRecord>(name, Path.Combine(basePath, name + ".json"), vectorStoreRecordDefinition);
 
-    public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default)
-        => Directory.EnumerateFiles(basePath, "*.json").ToAsyncEnumerable();
+    public IAsyncEnumerable<string> ListCollectionNamesAsync(CancellationToken cancellationToken = default) =>
+        Directory.EnumerateFiles(basePath, "*.json").ToAsyncEnumerable();
 
     private class JsonVectorStoreRecordCollection<TKey, TRecord> : IVectorStoreRecordCollection<TKey, TRecord>
         where TKey : notnull
@@ -45,8 +45,8 @@ public class JsonVectorStore(string basePath) : IVectorStore
 
         public string CollectionName { get; }
 
-        public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default)
-            => Task.FromResult(_records is not null);
+        public Task<bool> CollectionExistsAsync(CancellationToken cancellationToken = default) =>
+            Task.FromResult(_records is not null);
 
         public async Task CreateCollectionAsync(CancellationToken cancellationToken = default)
         {
@@ -85,11 +85,11 @@ public class JsonVectorStore(string basePath) : IVectorStore
             return Task.CompletedTask;
         }
 
-        public Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
-            => Task.FromResult(_records!.GetValueOrDefault(key));
+        public Task<TRecord?> GetAsync(TKey key, GetRecordOptions? options = null, CancellationToken cancellationToken = default) =>
+            Task.FromResult(_records!.GetValueOrDefault(key));
 
-        public IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default)
-            => keys.Select(key => _records!.GetValueOrDefault(key)!).Where(r => r is not null).ToAsyncEnumerable();
+        public IAsyncEnumerable<TRecord> GetBatchAsync(IEnumerable<TKey> keys, GetRecordOptions? options = null, CancellationToken cancellationToken = default) =>
+            keys.Select(key => _records!.GetValueOrDefault(key)!).Where(r => r is not null).ToAsyncEnumerable();
 
         public async Task<TKey> UpsertAsync(TRecord record, UpsertRecordOptions? options = null, CancellationToken cancellationToken = default)
         {

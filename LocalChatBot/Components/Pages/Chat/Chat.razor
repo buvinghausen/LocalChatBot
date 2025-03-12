@@ -105,6 +105,6 @@
             $"<result filename=\"{result.FileName}\" page_number=\"{result.PageNumber}\">{result.Text}</result>");
     }
 
-    public void Dispose()
-        => _currentResponseCancellation?.Cancel();
+    public void Dispose() =>
+        _currentResponseCancellation?.Cancel();
 }

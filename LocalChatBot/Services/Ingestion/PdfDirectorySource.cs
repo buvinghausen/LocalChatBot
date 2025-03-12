@@ -10,9 +10,11 @@ namespace LocalChatBot.Services.Ingestion;
 
 public class PdfDirectorySource(string sourceDirectory) : IIngestionSource
 {
-    public static string SourceFileId(string path) => Path.GetFileName(path);
+    public static string SourceFileId(string path) =>
+        Path.GetFileName(path);
 
-    public string SourceId => $"{nameof(PdfDirectorySource)}:{sourceDirectory}";
+    public string SourceId =>
+        $"{nameof(PdfDirectorySource)}:{sourceDirectory}";
 
     public async Task<IEnumerable<IngestedDocument>> GetNewOrModifiedDocumentsAsync(IQueryable<IngestedDocument> existingDocuments)
     {
