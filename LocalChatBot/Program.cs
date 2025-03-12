@@ -10,7 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 IChatClient chatClient = new OllamaApiClient(new Uri("http://localhost:11434"),
-    "gemma3");
+    "qwen2.5");
 var ollama = new OllamaApiClient(new Uri("http://localhost:11434"),
     "all-minilm");
 
