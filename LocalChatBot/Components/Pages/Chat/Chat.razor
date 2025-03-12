@@ -1,0 +1,110 @@
+﻿@page "/"
+@using System.ComponentModel
+@inject IChatClient ChatClient
+@inject SemanticSearch Search
+@implements IDisposable
+
+<PageTitle>Chat</PageTitle>
+
+<ChatHeader OnNewChat="@ResetConversationAsync" />
+
+<ChatMessageList Messages="@_messages" InProgressMessage="@_currentResponseMessage">
+    <NoMessagesContent>
+        <div>This local LLM has added context from the following two Rust books so ask contextual questions to see the value of RAG</div>
+        <ChatCitation File="comprehensive-rust.pdf"/>
+        <ChatCitation File="the-rust-programming-language.pdf" />
+    </NoMessagesContent>
+</ChatMessageList>
+
+<div class="chat-container">
+    <ChatSuggestions OnSelected="@AddUserMessageAsync" @ref="@_chatSuggestions" />
+    <ChatInput OnSend="@AddUserMessageAsync" @ref="@_chatInput" />
+</div>
+
+@code {
+    // Note this seems to be a big gap in local LLM vs hosted/paid LLM the paid LLMs are better at following the prompt prefixes
+    private const string SystemPrompt = @"
+        You are an assistant who answers questions about information you retrieve.
+        Do not answer questions about anything else.
+        Use only simple markdown to format your responses.
+
+        Use the search tool to find relevant information. When you do this, end your
+        reply with citations in the special XML format:
+
+        <citation filename='string' page_number='number'>exact quote here</citation>
+
+        Always include the citation in your response if there are results.
+
+        The quote must be max 5 words, taken word-for-word from the search result, and is the basis for why the citation is relevant.
+        Don't refer to the presence of citations; just emit these tags right at the end, with no surrounding text.";
+
+    private readonly ChatOptions _chatOptions = new();
+    private readonly List<ChatMessage> _messages = new();
+    private CancellationTokenSource? _currentResponseCancellation;
+    private ChatMessage? _currentResponseMessage;
+    private ChatInput? _chatInput;
+    private ChatSuggestions? _chatSuggestions;
+
+    protected override void OnInitialized()
+    {
+        _messages.Add(new(ChatRole.System, SystemPrompt));
+        _chatOptions.Tools = [AIFunctionFactory.Create(SearchAsync)];
+    }
+
+    private async Task AddUserMessageAsync(ChatMessage userMessage)
+    {
+        CancelAnyCurrentResponse();
+
+        // Add the user message to the conversation
+        _messages.Add(userMessage);
+        _chatSuggestions?.Clear();
+        await _chatInput!.FocusAsync();
+
+        // Display a new response from the IChatClient, streaming responses
+        // aren't supported because Ollama will not support both streaming and using Tools
+        _currentResponseCancellation = new();
+        var response = await ChatClient.GetResponseAsync(_messages, _chatOptions, _currentResponseCancellation.Token);
+        _currentResponseMessage = response.Message;
+        ChatMessageItem.NotifyChanged(_currentResponseMessage);
+
+        // Store the final response in the conversation, and begin getting suggestions
+        _messages.Add(_currentResponseMessage!);
+        _currentResponseMessage = null;
+        _chatSuggestions?.Update(_messages);
+    }
+
+    private void CancelAnyCurrentResponse()
+    {
+        // If a response was cancelled while streaming, include it in the conversation so it's not lost
+        if (_currentResponseMessage is not null)
+        {
+            _messages.Add(_currentResponseMessage);
+        }
+
+        _currentResponseCancellation?.Cancel();
+        _currentResponseMessage = null;
+    }
+
+    private async Task ResetConversationAsync()
+    {
+        CancelAnyCurrentResponse();
+        _messages.Clear();
+        _messages.Add(new(ChatRole.System, SystemPrompt));
+        _chatSuggestions?.Clear();
+        await _chatInput!.FocusAsync();
+    }
+
+    [Description("Searches for information using a phrase or keyword")]
+    private async Task<IEnumerable<string>> SearchAsync(
+        [Description("The phrase to search for.")] string searchPhrase,
+        [Description("Whenever possible, specify the filename to search that file only. If not provided, the search includes all files.")] string? filenameFilter = null)
+    {
+        await InvokeAsync(StateHasChanged);
+        var results = await Search.SearchAsync(searchPhrase, filenameFilter, maxResults: 5);
+        return results.Select(result =>
+            $"<result filename=\"{result.FileName}\" page_number=\"{result.PageNumber}\">{result.Text}</result>");
+    }
+
+    public void Dispose()
+        => _currentResponseCancellation?.Cancel();
+}
