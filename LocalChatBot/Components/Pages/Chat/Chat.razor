@@ -70,8 +70,8 @@
         // aren't supported because Ollama will not support both streaming and using Tools
         _currentResponseCancellation = new();
         var response = await ChatClient.GetResponseAsync(_messages, _chatOptions, _currentResponseCancellation.Token);
-        _currentResponseMessage = response.Message;
-        ChatMessageItem.NotifyChanged(_currentResponseMessage);
+        _currentResponseMessage = response.Messages.FirstOrDefault();
+        ChatMessageItem.NotifyChanged(_currentResponseMessage!);
 
         // Store the final response in the conversation, and begin getting suggestions
         _messages.Add(_currentResponseMessage!);
